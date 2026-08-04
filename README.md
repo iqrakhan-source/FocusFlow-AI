@@ -1,17 +1,28 @@
-# proviers
+# FocusFlow AI
 
-A new Flutter project.
+An AI-powered study companion that helps students build better study habits through personalized insights.
 
-## Getting Started
+## Tech Stack
 
-This project is a starting point for a Flutter application.
+- Flutter
+- Provider
+- GoRouter
+- FastAPI (Planned)
+- PostgreSQL (Planned)
+- Scikit-learn (Planned)
 
-A few resources to get you started if this is your first Flutter project:
+## Architecture
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Flutter (MVVM)
+        ↓
+FastAPI
+        ↓
+PostgreSQL
+        ↓
+Machine Learning
+        ↓
+Personalized Insights
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Status
+
+🚧 Currently under development.
