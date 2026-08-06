@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'core/routers/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 
@@ -20,25 +21,14 @@ class StudentTracker extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
+        return MaterialApp.router(
+        debugShowCheckedModeBanner: false,
 
-          theme: AppTheme.lightTheme,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeProvider.themeMode,
 
-          darkTheme: AppTheme.darkTheme,
-
-          themeMode: themeProvider.themeMode,
-
-          home:  Scaffold(
-            body: Center(
-              child: FloatingActionButton(
-                onPressed: () {
-                  context.read<ThemeProvider>().toggleTheme();
-                },
-                child: const Icon(Icons.dark_mode),
-              ),
-            ),
-          ),
+        routerConfig: AppRouter.router,
         );
       },
     );
