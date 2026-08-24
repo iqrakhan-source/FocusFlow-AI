@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+  const ProfileHeader({
+    super.key,
+    required this.name,
+    required this.course,
+    required this.semester,
+    required this.university,
+  });
+
+  final String name;
+  final String course;
+  final String semester;
+  final String university;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +28,6 @@ class ProfileHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar
           Container(
             width: 64,
             height: 64,
@@ -37,13 +47,12 @@ class ProfileHeader extends StatelessWidget {
 
           const SizedBox(width: 16),
 
-          // Profile information
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ananya',
+                  name,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -52,7 +61,7 @@ class ProfileHeader extends StatelessWidget {
                 const SizedBox(height: 2),
 
                 Text(
-                  'B.Tech Computer Science',
+                  course,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
@@ -61,7 +70,7 @@ class ProfileHeader extends StatelessWidget {
                 const SizedBox(height: 2),
 
                 Text(
-                  'Semester 5 · Delhi Technological University',
+                  '$semester · $university',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),

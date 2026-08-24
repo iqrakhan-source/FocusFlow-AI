@@ -11,6 +11,7 @@ class ProfileSettingsCard extends StatelessWidget {
     required this.onDarkModeChanged,
     required this.onDailyGoalTap,
     required this.onExportTap,
+    required this.dailyStudyGoal,
   });
 
   final bool notificationsEnabled;
@@ -21,6 +22,7 @@ class ProfileSettingsCard extends StatelessWidget {
 
   final VoidCallback onDailyGoalTap;
   final VoidCallback onExportTap;
+  final int dailyStudyGoal;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,7 @@ class ProfileSettingsCard extends StatelessWidget {
             icon: Icons.track_changes_outlined,
             title: 'Daily study goal',
             trailing: Text(
-              '5 hours',
+              '$dailyStudyGoal hours',
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),

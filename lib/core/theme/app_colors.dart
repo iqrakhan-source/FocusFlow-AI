@@ -57,4 +57,7 @@ class DarkColors {
   static const Color mutedForeground = Color(0xFFB3BAC8);
 
   static const Color border = Color(0xFF4A4C59);
+  static const Color primaryForeground = Colors.white;
+  static const Color secondaryForeground = Colors.white;
+  static const Color destructive = Color(0xFFE5484D);
 }

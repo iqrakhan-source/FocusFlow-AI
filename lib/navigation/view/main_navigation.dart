@@ -24,31 +24,33 @@ class MainNavigation extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
 
-        onDestinationSelected: _onDestinationSelected,
+        onDestinationSelected: (index) {
+          navigationShell.goBranch(index);
+        },
 
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
             label: 'Home',
-          ),
-
-          NavigationDestination(
-            icon: Icon(Icons.timer_outlined),
-            selectedIcon: Icon(Icons.timer),
-            label: 'Study',
           ),
 
           NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
             selectedIcon: Icon(Icons.calendar_month),
-            label: 'Calendar',
+            label: 'calendar',
           ),
 
           NavigationDestination(
             icon: Icon(Icons.analytics_outlined),
-            selectedIcon: Icon(Icons.analytics),
+            selectedIcon: Icon(Icons.analytics_outlined),
             label: 'Analytics',
+          ),
+
+          NavigationDestination(
+            icon: Icon(Icons.person_2_outlined),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),
