@@ -3,7 +3,7 @@ class DatabaseConstants {
 
   static const String databaseName = 'focusflow.db';
 
-  static const int databaseVersion = 5;
+  static const int databaseVersion = 9;
   // Tables
   static const String usersTable = 'users';
 

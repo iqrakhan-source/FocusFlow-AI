@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../viewmodel/reflection_viewmodel.dart';
+
 
 class DailyReflectionScreen extends StatefulWidget {
   const DailyReflectionScreen({super.key});
@@ -240,8 +245,52 @@ class _DailyReflectionScreenState extends State<DailyReflectionScreen> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // UI only for now.
+                  onPressed: () async {
+                    if (selectedMood == null ||
+                        selectedStress == null ||
+                        sleepController.text.isEmpty ||
+                        achievementController.text.isEmpty ||
+                        distractionController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Please complete your reflection.',
+                          ),
+                        ),
+                      );
+
+                      return;
+                    }
+
+                    final userId =
+                    context.read<AuthViewModel>().currentUser!.id!;
+
+                    final success =
+                    await context.read<ReflectionViewModel>().addReflection(
+                      userId: userId,
+                      mood: selectedMood!,
+                      stressLevel: selectedStress!,
+                      sleepHours:
+                      double.parse(sleepController.text),
+                      achievement:
+                      achievementController.text.trim(),
+                      distraction:
+                      distractionController.text.trim(),
+                    );
+
+                    if (!context.mounted) return;
+
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Reflection saved successfully.',
+                          ),
+                        ),
+                      );
+
+                      Navigator.pop(context);
+                    }
                   },
                   child: const Text('Save reflection'),
                 ),

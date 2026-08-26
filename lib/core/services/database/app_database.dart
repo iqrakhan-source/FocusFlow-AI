@@ -84,6 +84,79 @@ class AppDatabase {
           ON DELETE CASCADE
       )
     ''');
+
+    //ASSIGNMENT
+
+    await db.execute('''
+  CREATE TABLE ${DatabaseConstants.assignmentsTable} (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    due_date TEXT NOT NULL,
+
+    FOREIGN KEY (user_id)
+      REFERENCES ${DatabaseConstants.usersTable} (id)
+      ON DELETE CASCADE
+  )
+''');
+
+
+    //SESSION
+
+    await db.execute('''
+  CREATE TABLE ${DatabaseConstants.studySessionsTable} (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    subject TEXT NOT NULL,
+    session_type TEXT NOT NULL,
+    duration_minutes INTEGER NOT NULL,
+    started_at TEXT NOT NULL,
+    completed_at TEXT,
+    is_completed INTEGER NOT NULL,
+
+    FOREIGN KEY (user_id)
+      REFERENCES ${DatabaseConstants.usersTable} (id)
+      ON DELETE CASCADE
+  )
+''');
+
+    //GOALS
+
+    await db.execute('''
+  CREATE TABLE ${DatabaseConstants.goalsTable} (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    target_minutes INTEGER NOT NULL,
+    completed_minutes INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+
+    FOREIGN KEY (user_id)
+      REFERENCES ${DatabaseConstants.usersTable} (id)
+      ON DELETE CASCADE
+  )
+''');
+
+    //REFLECTION
+
+    await db.execute('''
+  CREATE TABLE ${DatabaseConstants.reflectionsTable} (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    mood TEXT NOT NULL,
+    stress_level INTEGER NOT NULL,
+    sleep_hours REAL NOT NULL,
+    achievement TEXT NOT NULL,
+    distraction TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+
+    FOREIGN KEY (user_id)
+      REFERENCES ${DatabaseConstants.usersTable} (id)
+      ON DELETE CASCADE
+  )
+''');
+
   }
 
   Future<void> _onUpgrade(
@@ -105,6 +178,77 @@ class AppDatabase {
             ON DELETE CASCADE
         )
       ''');
+    }
+    if (oldVersion < 6) {
+      await db.execute('''
+    CREATE TABLE ${DatabaseConstants.assignmentsTable} (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      due_date TEXT NOT NULL,
+
+      FOREIGN KEY (user_id)
+        REFERENCES ${DatabaseConstants.usersTable} (id)
+        ON DELETE CASCADE
+    )
+  ''');
+    }
+    if (oldVersion < 7) {
+      await db.execute('''
+    CREATE TABLE ${DatabaseConstants.studySessionsTable} (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      subject TEXT NOT NULL,
+      session_type TEXT NOT NULL,
+      duration_minutes INTEGER NOT NULL,
+      started_at TEXT NOT NULL,
+      completed_at TEXT,
+      is_completed INTEGER NOT NULL,
+
+      FOREIGN KEY (user_id)
+        REFERENCES ${DatabaseConstants.usersTable} (id)
+        ON DELETE CASCADE
+    )
+  ''');
+    }
+
+    if (oldVersion < 8) {
+      // GOALS
+      await db.execute('''
+  CREATE TABLE ${DatabaseConstants.goalsTable} (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    target_minutes INTEGER NOT NULL,
+    completed_minutes INTEGER NOT NULL DEFAULT 0,
+    goal_date TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+
+    FOREIGN KEY (user_id)
+      REFERENCES ${DatabaseConstants.usersTable} (id)
+      ON DELETE CASCADE
+  )
+''');
+    }
+
+    if (oldVersion < 9) {
+      await db.execute('''
+    CREATE TABLE ${DatabaseConstants.reflectionsTable} (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      mood TEXT NOT NULL,
+      stress_level INTEGER NOT NULL,
+      sleep_hours REAL NOT NULL,
+      achievement TEXT NOT NULL,
+      distraction TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+
+      FOREIGN KEY (user_id)
+        REFERENCES ${DatabaseConstants.usersTable} (id)
+        ON DELETE CASCADE
+    )
+  ''');
     }
   }
 }

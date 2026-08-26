@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../model/assignment_model.dart';
 import '../viewmodel/assignment_viewmodel.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
+
 
 class AssignmentsScreen extends StatelessWidget {
   const AssignmentsScreen({super.key});
@@ -122,7 +124,7 @@ class _AddAssignmentCardState
     }
   }
 
-  void _addAssignment() {
+ Future<void> _addAssignment() async{
     final title = _titleController.text.trim();
 
     if (title.isEmpty) {
@@ -146,10 +148,19 @@ class _AddAssignmentCardState
       return;
     }
 
-    context.read<AssignmentViewModel>().addAssignment(
+    final userId =
+        context.read<AuthViewModel>().currentUser?.id;
+
+    if (userId == null) {
+      _showMessage('User information is missing.');
+      return;
+    }
+
+    await context.read<AssignmentViewModel>().addAssignment(
       title: title,
       subject: _selectedSubject!,
       dueDate: _selectedDate!,
+      userId: userId,
     );
 
     _titleController.clear();
@@ -455,7 +466,7 @@ class _AssignmentTile extends StatelessWidget {
               context
                   .read<AssignmentViewModel>()
                   .deleteAssignment(
-                assignment.id,
+                assignment.id!,
               );
             },
 

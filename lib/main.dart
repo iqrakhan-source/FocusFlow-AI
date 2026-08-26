@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'features/reflection/viewmodel/reflection_viewmodel.dart';
 import 'core/routers/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
-import 'features/auth/viewmodel/auth_viewmodel.dart';
 
+import 'features/auth/viewmodel/auth_viewmodel.dart';
+import 'features/calendar/viewmodel/calendar_viewmodel.dart';
 
 void main() {
   runApp(
@@ -13,8 +15,17 @@ void main() {
         ChangeNotifierProvider(
           create: (_) => ThemeProvider(),
         ),
+
         ChangeNotifierProvider(
           create: (_) => AuthViewModel(),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => CalendarViewModel(),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => ReflectionViewModel(),
         ),
       ],
       child: const StudentTracker(),
@@ -30,11 +41,11 @@ class StudentTracker extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: themeProvider.themeMode,
-        routerConfig: AppRouter.router,
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          routerConfig: AppRouter.router,
         );
       },
     );

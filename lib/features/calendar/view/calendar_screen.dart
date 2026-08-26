@@ -1,9 +1,11 @@
-import'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../viewmodel/calendar_viewmodel.dart';
 import '../wigets/calendar_legend.dart';
 import '../wigets/calendar_toggle.dart';
 import '../wigets/month_calendar.dart';
 import '../wigets/week_calendar.dart';
-
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -16,9 +18,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
   bool isMonthView = true;
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = context.read<AuthViewModel>().currentUser!.id!;
+
+      context.read<CalendarViewModel>().loadEvents(userId);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+
+    final calendar = context.watch<CalendarViewModel>();
 
     return Scaffold(
       body: SafeArea(
@@ -64,16 +79,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
               const SizedBox(height: 16),
 
               // CALENDAR
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: isMonthView
-                    ? const MonthCalendar(
-                  key: ValueKey('month'),
+              if (calendar.isLoading)
+                const Center(
+                  child: CircularProgressIndicator(),
                 )
-                    : const WeekCalendar(
-                  key: ValueKey('week'),
+              else
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: isMonthView
+                      ? MonthCalendar(
+                    key: const ValueKey('month'),
+                    events: calendar.events,
+                  )
+                      : WeekCalendar(
+                    key: const ValueKey('week'),
+                    events: calendar.events,
+                  ),
                 ),
-              ),
 
               const SizedBox(height: 16),
 

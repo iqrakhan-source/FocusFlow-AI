@@ -1,70 +1,44 @@
 import 'package:flutter/material.dart';
 
+import '../model/calendar_event_model.dart';
+
 class WeekCalendar extends StatelessWidget {
-  const WeekCalendar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        _WeekEventCard(
-          day: 'Mon 3',
-          events: [
-            _WeekEvent(
-              title: 'DSA · Deep Work',
-              type: WeekEventType.study,
-            ),
-          ],
-        ),
-
-        SizedBox(height: 12),
-
-        _WeekEventCard(
-          day: 'Wed 5',
-          events: [
-            _WeekEvent(
-              title: 'DBMS · Revision',
-              type: WeekEventType.study,
-            ),
-            _WeekEvent(
-              title: 'CN Lab Report due',
-              type: WeekEventType.assignment,
-            ),
-          ],
-        ),
-
-        SizedBox(height: 12),
-
-        _WeekEventCard(
-          day: 'Fri 14',
-          events: [
-            _WeekEvent(
-              title: 'Mid-Sem: DSA',
-              type: WeekEventType.exam,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _WeekEventCard extends StatelessWidget {
-  const _WeekEventCard({
-    required this.day,
+  const WeekCalendar({
+    super.key,
     required this.events,
   });
 
-  final String day;
-  final List<_WeekEvent> events;
+  final List<CalendarEventModel> events;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    final now = DateTime.now();
+
+    // Monday of the current week.
+    final monday = now.subtract(
+      Duration(days: now.weekday - 1),
+    );
+
+    final weekDays = List.generate(
+      7,
+          (index) => DateTime(
+        monday.year,
+        monday.month,
+        monday.day + index,
+      ),
+    );
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(
+        12,
+        18,
+        12,
+        20,
+      ),
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(22),
@@ -73,84 +47,142 @@ class _WeekEventCard extends StatelessWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            day,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          // WEEK DAYS
+          Row(
+            children: weekDays.map((date) {
+              final isToday =
+                  date.year == now.year &&
+                      date.month == now.month &&
+                      date.day == now.day;
 
-          const SizedBox(height: 12),
-
-          ...events.map(
-                (event) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
+              return Expanded(
+                child: Column(
                   children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: _eventColor(
-                          context,
-                          event.type,
-                        ),
-                        shape: BoxShape.circle,
+                    Text(
+                      _weekdayName(date.weekday),
+                      style:
+                      theme.textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
 
-                    const SizedBox(width: 8),
+                    const SizedBox(height: 8),
 
-                    Text(
-                      event.title,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium,
+                    Container(
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isToday
+                            ? colors.primary
+                            : Colors.transparent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${date.day}',
+                        style:
+                        theme.textTheme.bodyMedium?.copyWith(
+                          color: isToday
+                              ? colors.onPrimary
+                              : colors.onSurface,
+                          fontWeight: isToday
+                              ? FontWeight.w700
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    _EventDots(
+                      events: _eventsForDate(date),
                     ),
                   ],
                 ),
               );
-            },
+            }).toList(),
           ),
         ],
       ),
     );
   }
+
+  List<CalendarEventModel> _eventsForDate(
+      DateTime date,
+      ) {
+    return events.where((event) {
+      return event.date.year == date.year &&
+          event.date.month == date.month &&
+          event.date.day == date.day;
+    }).toList();
+  }
+
+  String _weekdayName(int weekday) {
+    const names = [
+      'M',
+      'T',
+      'W',
+      'T',
+      'F',
+      'S',
+      'S',
+    ];
+
+    return names[weekday - 1];
+  }
 }
 
-class _WeekEvent {
-  const _WeekEvent({
-    required this.title,
-    required this.type,
+class _EventDots extends StatelessWidget {
+  const _EventDots({
+    required this.events,
   });
 
-  final String title;
-  final WeekEventType type;
-}
+  final List<CalendarEventModel> events;
 
-enum WeekEventType {
-  study,
-  assignment,
-  exam,
-}
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
 
-Color _eventColor(
-    BuildContext context,
-    WeekEventType type,
-    ) {
-  final colors = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: events.take(3).map((event) {
+        Color color;
 
-  switch (type) {
-    case WeekEventType.study:
-      return colors.primary;
+        switch (event.eventType) {
+          case 'study':
+            color = colors.primary;
+            break;
 
-    case WeekEventType.assignment:
-      return colors.secondary;
+          case 'assignment':
+            color = colors.secondary;
+            break;
 
-    case WeekEventType.exam:
-      return const Color(0xFFF2994A);
+          case 'exam':
+            color = colors.error;
+            break;
+
+          case 'missed_goal':
+            color = const Color(0xFFF2994A);
+            break;
+
+          default:
+            color = colors.primary;
+        }
+
+        return Container(
+          width: 4,
+          height: 4,
+          margin: const EdgeInsets.symmetric(
+            horizontal: 1,
+          ),
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        );
+      }).toList(),
+    );
   }
 }

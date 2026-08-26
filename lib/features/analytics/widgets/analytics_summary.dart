@@ -20,7 +20,7 @@ class AnalyticsSummary extends StatelessWidget {
         const SizedBox(width: 12),
          Expanded(
           child: _SummaryCard(
-            value: '${analytics.monthlyStudyHours}h',
+            value: '${analytics.monthlyStudyHours.toStringAsFixed(1)}h',
             label: 'This month',
           ),
         ),

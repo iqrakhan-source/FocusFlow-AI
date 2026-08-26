@@ -1,13 +1,45 @@
 import 'package:flutter/material.dart';
 
+import '../model/calendar_event_model.dart';
+
 class MonthCalendar extends StatelessWidget {
   const MonthCalendar({
     super.key,
+    required this.events,
   });
+
+  final List<CalendarEventModel> events;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    final now = DateTime.now();
+
+    final year = now.year;
+    final month = now.month;
+
+    // First day of the current month.
+    final firstDay = DateTime(year, month, 1);
+
+    // Number of days in the current month.
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+
+    // Monday = 1 ... Sunday = 7
+    final startingOffset = firstDay.weekday - 1;
+
+    // Dynamically generate calendar days.
+    final days = <int?>[
+      ...List<int?>.filled(
+        startingOffset,
+        null,
+      ),
+      ...List.generate(
+        daysInMonth,
+            (index) => index + 1,
+      ),
+    ];
 
     const weekdays = [
       'M',
@@ -17,41 +49,6 @@ class MonthCalendar extends StatelessWidget {
       'F',
       'S',
       'S',
-    ];
-
-    // September 2026 starts on Tuesday.
-    const days = <int?>[
-      null,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24,
-      25,
-      26,
-      27,
-      28,
-      29,
-      30,
     ];
 
     return Container(
@@ -78,10 +75,7 @@ class MonthCalendar extends StatelessWidget {
                 child: Center(
                   child: Text(
                     day,
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelSmall
-                        ?.copyWith(
+                    style: theme.textTheme.labelSmall?.copyWith(
                       color: colors.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
@@ -106,19 +100,31 @@ class MonthCalendar extends StatelessWidget {
             itemBuilder: (context, index) {
               final day = days[index];
 
+              // Empty cells before the first day.
               if (day == null) {
                 return const SizedBox();
               }
 
-              final isSelected = day == 12;
+              final date = DateTime(
+                year,
+                month,
+                day,
+              );
+
+              final isToday =
+                  date.year == now.year &&
+                      date.month == now.month &&
+                      date.day == now.day;
+
+              final eventColors = _eventColorsForDate(
+                context,
+                date,
+              );
 
               return _CalendarDay(
                 day: day,
-                isSelected: isSelected,
-                eventColors: _eventColorsForDay(
-                  context,
-                  day,
-                ),
+                isSelected: isToday,
+                eventColors: eventColors,
               );
             },
           ),
@@ -127,58 +133,36 @@ class MonthCalendar extends StatelessWidget {
     );
   }
 
-  List<Color> _eventColorsForDay(
+  List<Color> _eventColorsForDate(
       BuildContext context,
-      int day,
+      DateTime date,
       ) {
     final colors = Theme.of(context).colorScheme;
 
-    switch (day) {
-      case 3:
-        return [
-          colors.primary,
-        ];
+    final dayEvents = events.where((event) {
+      return event.date.year == date.year &&
+          event.date.month == date.month &&
+          event.date.day == date.day;
+    }).toList();
 
-      case 4:
-        return [
-          colors.primary,
-          colors.secondary,
-        ];
+    return dayEvents.map((event) {
+      switch (event.eventType) {
+        case 'study':
+          return colors.primary;
 
-      case 8:
-        return [
-          colors.error,
-        ];
+        case 'assignment':
+          return colors.secondary;
 
-      case 14:
-        return [
-          const Color(0xFFF2994A),
-        ];
+        case 'exam':
+          return colors.error;
 
-      case 17:
-        return [
-          colors.primary,
-          colors.secondary,
-        ];
+        case 'missed_goal':
+          return const Color(0xFFF2994A);
 
-      case 21:
-        return [
-          colors.primary,
-        ];
-
-      case 24:
-        return [
-          const Color(0xFFF2994A),
-        ];
-
-      case 27:
-        return [
-          colors.primary,
-        ];
-
-      default:
-        return [];
-    }
+        default:
+          return colors.primary;
+      }
+    }).toList();
   }
 }
 
@@ -195,7 +179,8 @@ class _CalendarDay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -212,10 +197,7 @@ class _CalendarDay extends StatelessWidget {
           ),
           child: Text(
             '$day',
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
+            style: theme.textTheme.bodyMedium?.copyWith(
               color: isSelected
                   ? colors.onPrimary
                   : colors.onSurface,

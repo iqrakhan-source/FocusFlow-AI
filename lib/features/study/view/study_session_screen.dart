@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/study_session_viewmodel.dart';
 
 class StudySessionScreen extends StatefulWidget {
@@ -86,10 +87,23 @@ class _StudySessionScreenState extends State<StudySessionScreen> {
   }
 
   void _startSession() {
+    final userId =
+        context.read<AuthViewModel>().currentUser?.id;
+
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User information is missing.'),
+        ),
+      );
+      return;
+    }
+
     final durationMinutes =
     int.parse(selectedDuration.replaceAll('m', ''));
 
     context.read<StudyViewModel>().startSession(
+      userId: userId,
       subject: selectedSubject,
       sessionType: selectedType,
       durationMinutes: durationMinutes,

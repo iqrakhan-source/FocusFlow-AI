@@ -3,7 +3,7 @@ import 'package:proviers/features/analytics/view/analytics_screen.dart';
 import 'package:proviers/features/calendar/view/calendar_screen.dart';
 import 'package:proviers/features/dashboard/view/dashboard_screen.dart';
 import 'package:proviers/features/profile/view/profile_screen.dart';
-import 'package:proviers/features/reflection/reflecton_screen.dart';
+import 'package:proviers/features/reflection/view/reflecton_screen.dart';
 import 'package:proviers/features/study/view/study_session_screen.dart';
 import 'package:proviers/features/splash/presentation/screens/splash_screen.dart';
 import 'package:provider/provider.dart';

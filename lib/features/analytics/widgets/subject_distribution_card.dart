@@ -1,8 +1,10 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../modelview/analytics_viewmodel.dart';
+
 class SubjectDistributionCard extends StatelessWidget {
   const SubjectDistributionCard({super.key});
 
@@ -10,9 +12,62 @@ class SubjectDistributionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final analytics = context.watch<AnalyticsViewModel>();
 
-    final distribution = analytics.subjectDistribution;
+    final distribution =
+        context.watch<AnalyticsViewModel>().subjectDistribution;
+
+    if (distribution.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: colors.outlineVariant,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Subject distribution',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: Text(
+                'No study data yet.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final totalMinutes = distribution.values.fold<double>(
+      0,
+          (sum, value) => sum + value,
+    );
+
+    final subjects = distribution.entries.toList();
+
+    final subjectColors = [
+      const Color(0xFF5B4BCF),
+      const Color(0xFF38B887),
+      const Color(0xFFF4B547),
+      Colors.grey,
+    ];
+
+    final percentages = subjects.map((entry) {
+      return (entry.value / totalMinutes) * 100;
+    }).toList();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -42,18 +97,12 @@ class SubjectDistributionCard extends StatelessWidget {
                 height: 150,
                 child: CustomPaint(
                   painter: _DonutPainter(
-                    segments: const [
-                      38,
-                      22,
-                      21,
-                      19,
-                    ],
-                    colors: [
-                      Color(0xFF5B4BCF),
-                      Color(0xFF38B887),
-                      Color(0xFFF4B547),
-                      Colors.grey,
-                    ],
+                    segments: percentages,
+                    colors: List.generate(
+                      subjects.length,
+                          (index) => subjectColors[
+                      index % subjectColors.length],
+                    ),
                   ),
                 ),
               ),
@@ -62,37 +111,30 @@ class SubjectDistributionCard extends StatelessWidget {
 
               Expanded(
                 child: Column(
-                  children: [
-                    _SubjectRow(
-                      subject: 'DSA',
-                      percentage: '${distribution['DSA']!.round()}%',
-                      color: const Color(0xFF5B4BCF),
-                    ),
+                  children: List.generate(
+                    subjects.length,
+                        (index) {
+                      final subject =
+                          subjects[index].key;
 
-                    const SizedBox(height: 12),
-
-                    _SubjectRow(
-                      subject: 'DBMS',
-                      percentage: '${distribution['DBMS']!.round()}%',
-                      color: const Color(0xFF38B887),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _SubjectRow(
-                      subject: 'OS',
-                      percentage: '${distribution['OS']!.round()}%',
-                      color: const Color(0xFFF4B547),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _SubjectRow(
-                      subject: 'CN',
-                      percentage: '${distribution['CN']!.round()}%',
-                      color: Colors.grey,
-                    ),
-                  ],
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: index ==
+                              subjects.length - 1
+                              ? 0
+                              : 12,
+                        ),
+                        child: _SubjectRow(
+                          subject: subject,
+                          percentage:
+                          '${percentages[index].round()}%',
+                          color: subjectColors[
+                          index %
+                              subjectColors.length],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
@@ -134,13 +176,18 @@ class _SubjectRow extends StatelessWidget {
         Expanded(
           child: Text(
             subject,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium,
           ),
         ),
 
         Text(
           percentage,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(
             color: colors.onSurfaceVariant,
             fontWeight: FontWeight.w600,
           ),
@@ -200,7 +247,9 @@ class _DonutPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _DonutPainter oldDelegate) {
+  bool shouldRepaint(
+      covariant _DonutPainter oldDelegate,
+      ) {
     return oldDelegate.segments != segments ||
         oldDelegate.colors != colors;
   }

@@ -1,9 +1,13 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+
 import '../model/study_session.dart';
+import '../repository/study_session_repository.dart';
 
 class StudyViewModel extends ChangeNotifier {
+  final StudySessionRepository _repository =
+  StudySessionRepository();
+
   StudySessionModel? _currentSession;
 
   Timer? _timer;
@@ -36,10 +40,12 @@ class StudyViewModel extends ChangeNotifier {
     required String subject,
     required String sessionType,
     required int durationMinutes,
+    required int userId,
   }) {
     _timer?.cancel();
 
     _currentSession = StudySessionModel(
+      userId: userId,
       subject: subject,
       sessionType: sessionType,
       durationMinutes: durationMinutes,
@@ -100,14 +106,34 @@ class StudyViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _completeSession() {
+  Future<void> _completeSession() async {
     _timer?.cancel();
 
     if (_currentSession != null) {
-      _currentSession = _currentSession!.copyWith(
+      final completedSession = _currentSession!.copyWith(
         completedAt: DateTime.now(),
         isCompleted: true,
       );
+
+      _currentSession = completedSession;
+
+      try {
+        final id = await _repository.addSession(
+          completedSession,
+        );
+
+        _currentSession = completedSession.copyWith(
+          id: id,
+        );
+
+        debugPrint(
+          'STUDY SESSION SAVED: $id',
+        );
+      } catch (e) {
+        debugPrint(
+          'SAVE STUDY SESSION ERROR: $e',
+        );
+      }
     }
 
     _remainingSeconds = 0;
