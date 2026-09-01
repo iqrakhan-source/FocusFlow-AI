@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../calendar/viewmodel/calendar_viewmodel.dart';
 import '../model/exam_model.dart';
 import '../viewmodel/exam_viewmodel.dart';
 
@@ -16,8 +17,24 @@ class ExamDatesScreen extends StatelessWidget {
   }
 }
 
-class _ExamDatesView extends StatelessWidget {
+class _ExamDatesView extends StatefulWidget {
   const _ExamDatesView();
+
+  @override
+  State<_ExamDatesView> createState() => _ExamDatesViewState();
+}
+
+class _ExamDatesViewState extends State<_ExamDatesView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = context.read<AuthViewModel>().currentUser?.id;
+      if (userId != null) {
+        context.read<ExamViewModel>().loadExams(userId);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +83,14 @@ class _ExamDatesView extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              if (viewModel.exams.isEmpty)
+              if (viewModel.isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (viewModel.exams.isEmpty)
                 const _EmptyExams()
               else
                 ...viewModel.exams.map(
@@ -157,6 +181,10 @@ class _AddExamCardState extends State<_AddExamCard> {
       examDate: _selectedDate!,
       userId: userId,
     );
+
+    if (mounted) {
+      context.read<CalendarViewModel>().loadEvents(userId);
+    }
 
     _titleController.clear();
 
@@ -400,10 +428,15 @@ class _ExamTile extends StatelessWidget {
           ),
 
           IconButton(
-            onPressed: () {
-              context
+            onPressed: () async {
+              final userId =
+                  context.read<AuthViewModel>().currentUser?.id;
+              await context
                   .read<ExamViewModel>()
                   .deleteExam(exam.id!);
+              if (userId != null && context.mounted) {
+                context.read<CalendarViewModel>().loadEvents(userId);
+              }
             },
             icon: const Icon(
               Icons.delete_outline,

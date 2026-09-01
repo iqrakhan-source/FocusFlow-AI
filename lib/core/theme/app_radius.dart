@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 class AppRadius {
   static const small = 8.0;

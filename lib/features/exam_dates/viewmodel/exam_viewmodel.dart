@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../model/exam_model.dart';
 import '../repository/exam_repository.dart';
-import 'package:provider/provider.dart';
-import '../../auth/viewmodel/auth_viewmodel.dart';
+
 
 class ExamViewModel extends ChangeNotifier {
   final ExamRepository _repository = ExamRepository();

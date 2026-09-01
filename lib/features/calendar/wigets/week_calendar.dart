@@ -110,12 +110,13 @@ class WeekCalendar extends StatelessWidget {
   }
 
   List<CalendarEventModel> _eventsForDate(
-      DateTime date,
-      ) {
+    DateTime date,
+  ) {
     return events.where((event) {
-      return event.date.year == date.year &&
-          event.date.month == date.month &&
-          event.date.day == date.day;
+      final eDate = event.date.toLocal();
+      return eDate.year == date.year &&
+          eDate.month == date.month &&
+          eDate.day == date.day;
     }).toList();
   }
 
@@ -147,7 +148,7 @@ class _EventDots extends StatelessWidget {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: events.take(3).map((event) {
+      children: events.take(4).map((event) {
         Color color;
 
         switch (event.eventType) {
@@ -160,11 +161,11 @@ class _EventDots extends StatelessWidget {
             break;
 
           case 'exam':
-            color = colors.error;
+            color = const Color(0xFFF2994A);
             break;
 
           case 'missed_goal':
-            color = const Color(0xFFF2994A);
+            color = colors.error;
             break;
 
           default:
@@ -172,10 +173,10 @@ class _EventDots extends StatelessWidget {
         }
 
         return Container(
-          width: 4,
-          height: 4,
+          width: 5,
+          height: 5,
           margin: const EdgeInsets.symmetric(
-            horizontal: 1,
+            horizontal: 1.5,
           ),
           decoration: BoxDecoration(
             color: color,

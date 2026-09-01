@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../modelview/analytics_viewmodel.dart';
 class AiInsightCard extends StatelessWidget {
   const AiInsightCard({
     super.key,

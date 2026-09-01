@@ -20,7 +20,6 @@ class QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
-    final secondary = Theme.of(context).colorScheme.secondary;
 
     return IntrinsicHeight(
       child: Row(
