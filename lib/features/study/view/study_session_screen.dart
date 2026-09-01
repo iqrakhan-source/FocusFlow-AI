@@ -2,241 +2,207 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../subject/viewmodel/subject_viewmodel.dart';
 import '../viewmodel/study_session_viewmodel.dart';
 
 class StudySessionScreen extends StatefulWidget {
   const StudySessionScreen({super.key});
 
   @override
-  State<StudySessionScreen> createState() => _StudySessionScreenState();
+  State<StudySessionScreen> createState() =>
+      _StudySessionScreenState();
 }
 
 class _StudySessionScreenState extends State<StudySessionScreen> {
-  String selectedSubject = 'DSA';
+  String? selectedSubject;
   String selectedType = 'Deep Work';
-  String selectedDuration = '45m';
+  String selectedDuration = '25m';
 
-  final subjects = [
-    'DSA',
-    'DBMS',
-    'Operating Systems',
-    'Computer Networks',
-  ];
+  @override
+  void initState() {
+    super.initState();
 
-  final sessionTypes = [
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId =
+      context.read<AuthViewModel>().currentUser!.id!;
+
+      context.read<SubjectViewModel>().loadSubjects(userId);
+    });
+  }
+
+
+  final List<String> sessionTypes = [
     'Deep Work',
     'Revision',
     'Practice',
   ];
 
-  final durations = [
+  final List<String> durations = [
     '25m',
     '45m',
     '60m',
-    'Custom',
+    '90m',
   ];
-
-  Future<void> _selectCustomDuration() async {
-    final controller = TextEditingController();
-
-    final result = await showDialog<int>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Custom duration'),
-          content: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Enter minutes',
-              suffixText: 'min',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final minutes = int.tryParse(controller.text);
-
-                if (minutes == null || minutes <= 0) {
-                  return;
-                }
-
-                Navigator.pop(context, minutes);
-              },
-              child: const Text('Done'),
-            ),
-          ],
-        );
-      },
-    );
-
-    controller.dispose();
-
-    if (result != null) {
-      setState(() {
-        selectedDuration = '${result}m';
-      });
-    }
-  }
-
-  void _startSession() {
-    final userId =
-        context.read<AuthViewModel>().currentUser?.id;
-
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User information is missing.'),
-        ),
-      );
-      return;
-    }
-
-    final durationMinutes =
-    int.parse(selectedDuration.replaceAll('m', ''));
-
-    context.read<StudyViewModel>().startSession(
-      userId: userId,
-      subject: selectedSubject,
-      sessionType: selectedType,
-      durationMinutes: durationMinutes,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<StudyViewModel>();
-
-    if (viewModel.isRunning) {
-      return _ActiveStudySession(
-        viewModel: viewModel,
-      );
-    }
-
     final theme = Theme.of(context);
+
+
+    final subjects =
+        context.watch<SubjectViewModel>().subjects;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New session'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ),
-        ],
+        title: const Text('Start Study'),
       ),
 
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // SUBJECT
+              Text(
+                'Start a study session',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                'Choose what you want to focus on.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ---------------- SUBJECT ----------------
 
               Text(
                 'Subject',
-                style: theme.textTheme.bodyMedium,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
               const SizedBox(height: 10),
 
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: subjects.map((subject) {
-                  return _SelectionChip(
-                    label: subject,
-                    selected: selectedSubject == subject,
-                    onTap: () {
-                      setState(() {
-                        selectedSubject = subject;
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
+              if (subjects.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    'No subjects available. Add a subject first.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                )
+              else
+                DropdownButtonFormField<String>(
+                  value: subjects.any(
+                        (subject) => subject.name == selectedSubject,
+                  )
+                      ? selectedSubject
+                      : null,
+                  decoration: const InputDecoration(
+                    hintText: 'Select subject',
+                  ),
+                  items: subjects.map((subject) {
+                    return DropdownMenuItem<String>(
+                      value: subject.name,
+                      child: Text(subject.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedSubject = value;
+                    });
+                  },
+                ),
 
-              const SizedBox(height: 34),
+              const SizedBox(height: 24),
 
-              // SESSION TYPE
+              // ---------------- SESSION TYPE ----------------
 
               Text(
                 'Session type',
-                style: theme.textTheme.bodyMedium,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
               const SizedBox(height: 10),
 
-              Wrap(
-                spacing: 8,
-                children: sessionTypes.map((type) {
-                  return _SelectionChip(
-                    label: type,
-                    selected: selectedType == type,
-                    onTap: () {
-                      setState(() {
-                        selectedType = type;
-                      });
-                    },
+              DropdownButtonFormField<String>(
+                value: selectedType,
+                decoration: const InputDecoration(),
+                items: sessionTypes.map((type) {
+                  return DropdownMenuItem<String>(
+                    value: type,
+                    child: Text(type),
                   );
                 }).toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+
+                  setState(() {
+                    selectedType = value;
+                  });
+                },
               ),
 
-              const SizedBox(height: 34),
+              const SizedBox(height: 24),
 
-              // DURATION
+              // ---------------- DURATION ----------------
 
               Text(
                 'Duration',
-                style: theme.textTheme.bodyMedium,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
               const SizedBox(height: 10),
 
-              Row(
-                children: durations.map((duration) {
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: _SelectionChip(
-                        label: duration,
-                        selected: selectedDuration == duration,
-                        expanded: true,
-                        onTap: () {
-                          if (duration == 'Custom') {
-                            _selectCustomDuration();
-                          } else {
-                            setState(() {
-                              selectedDuration = duration;
-                            });
-                          }
-                        },
-                      ),
-                    ),
+              DropdownButtonFormField<String>(
+                value: selectedDuration,
+                decoration: const InputDecoration(),
+                items: durations.map((duration) {
+                  return DropdownMenuItem<String>(
+                    value: duration,
+                    child: Text(duration),
                   );
                 }).toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+
+                  setState(() {
+                    selectedDuration = value;
+                  });
+                },
               ),
 
-              const Spacer(),
+              const SizedBox(height: 36),
 
-              // START BUTTON
+              // ---------------- START BUTTON ----------------
 
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 54,
                 child: ElevatedButton(
-                  onPressed: _startSession,
+                  onPressed: selectedSubject == null
+                      ? null
+                      : _startSession,
                   child: const Text('Start session'),
                 ),
               ),
@@ -246,165 +212,19 @@ class _StudySessionScreenState extends State<StudySessionScreen> {
       ),
     );
   }
-}
 
-class _ActiveStudySession extends StatelessWidget {
-  const _ActiveStudySession({
-    required this.viewModel,
-  });
+  void _startSession() {
+    final durationMinutes =
+    int.parse(selectedDuration.replaceAll('m', ''));
 
-  final StudyViewModel viewModel;
+    final userId =
+    context.read<AuthViewModel>().currentUser!.id!;
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Study session'),
-        ),
-      
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-               const Spacer(),
-      
-                Text(
-                  viewModel.currentSession?.subject ?? '',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-      
-                const SizedBox(height: 8),
-      
-                Text(
-                  viewModel.currentSession?.sessionType ?? '',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-      
-                const SizedBox(height: 40),
-      
-                Text(
-                  viewModel.formattedTime,
-                  style: theme.textTheme.displayLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-      
-                const SizedBox(height: 40),
-      
-                if (viewModel.isPaused)
-                  const Text('Session paused'),
-      
-                const SizedBox(height: 20),
-      
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        if (viewModel.isPaused) {
-                          context
-                              .read<StudyViewModel>()
-                              .resumeSession();
-                        } else {
-                          context
-                              .read<StudyViewModel>()
-                              .pauseSession();
-                        }
-                      },
-                      icon: Icon(
-                        viewModel.isPaused
-                            ? Icons.play_arrow
-                            : Icons.pause,
-                      ),
-                      label: Text(
-                        viewModel.isPaused
-                            ? 'Resume'
-                            : 'Pause',
-                      ),
-                    ),
-      
-                    const SizedBox(width: 12),
-      
-                    OutlinedButton(
-                      onPressed: () {
-                        context
-                            .read<StudyViewModel>()
-                            .stopSession();
-                      },
-                      child: const Text('Stop'),
-                    ),
-                  ],
-                ),
-      
-                const Spacer(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SelectionChip extends StatelessWidget {
-  const _SelectionChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    this.expanded = false,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  final bool expanded;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Material(
-      color: selected
-          ? colors.primary
-          : colors.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          width: expanded ? double.infinity : null,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 10,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
-              color: selected
-                  ? colors.onPrimary
-                  : colors.onSurface,
-              fontWeight: selected
-                  ? FontWeight.w600
-                  : FontWeight.w400,
-            ),
-          ),
-        ),
-      ),
+    context.read<StudyViewModel>().startSession(
+      userId: userId,
+      subject: selectedSubject!,
+      sessionType: selectedType,
+      durationMinutes: durationMinutes,
     );
   }
 }

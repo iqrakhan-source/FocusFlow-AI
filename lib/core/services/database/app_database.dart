@@ -121,8 +121,7 @@ class AppDatabase {
   )
 ''');
 
-    //GOALS
-
+    // GOALS
     await db.execute('''
   CREATE TABLE ${DatabaseConstants.goalsTable} (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -215,22 +214,21 @@ class AppDatabase {
     }
 
     if (oldVersion < 8) {
-      // GOALS
       await db.execute('''
-  CREATE TABLE ${DatabaseConstants.goalsTable} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    target_minutes INTEGER NOT NULL,
-    completed_minutes INTEGER NOT NULL DEFAULT 0,
-    goal_date TEXT NOT NULL,
-    created_at TEXT NOT NULL,
+    CREATE TABLE ${DatabaseConstants.goalsTable} (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      target_minutes INTEGER NOT NULL,
+      completed_minutes INTEGER NOT NULL DEFAULT 0,
+      goal_date TEXT NOT NULL,
+      created_at TEXT NOT NULL,
 
-    FOREIGN KEY (user_id)
-      REFERENCES ${DatabaseConstants.usersTable} (id)
-      ON DELETE CASCADE
-  )
-''');
+      FOREIGN KEY (user_id)
+        REFERENCES ${DatabaseConstants.usersTable} (id)
+        ON DELETE CASCADE
+    )
+  ''');
     }
 
     if (oldVersion < 9) {

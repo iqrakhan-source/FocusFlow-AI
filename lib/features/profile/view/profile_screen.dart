@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:provider/provider.dart';
+import '../../../core/routers/app_routes.dart';
 import '../../../core/routers/app_routes.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../widgets/profile_study_data_card.dart';
@@ -124,8 +125,9 @@ class _ProfileView extends StatelessWidget {
 
               LogoutButton(
                 onPressed: () {
-                  // Logout functionality will be added later.
-                },
+                  context.read<AuthViewModel>().logout();
+
+                  context.go(AppRoutes.login);                },
               ),
             ],
           ),
