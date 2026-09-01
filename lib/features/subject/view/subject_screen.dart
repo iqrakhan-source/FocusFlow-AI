@@ -87,7 +87,6 @@ class _AddSubjectCard extends StatefulWidget {
 class _AddSubjectCardState extends State<_AddSubjectCard> {
   final _nameController = TextEditingController();
   final _courseController = TextEditingController();
-  final _idController = TextEditingController();
   Color? _selectedColor;
 
   @override

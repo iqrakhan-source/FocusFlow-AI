@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +18,7 @@ class SignupScreen extends StatelessWidget {
 }
 
 class _SignupView extends StatefulWidget {
-  const _SignupView({super.key});
+  const _SignupView();
 
   @override
   State<_SignupView> createState() => _SignupViewState();

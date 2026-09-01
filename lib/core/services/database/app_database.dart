@@ -130,6 +130,7 @@ class AppDatabase {
     title TEXT NOT NULL,
     target_minutes INTEGER NOT NULL,
     completed_minutes INTEGER NOT NULL DEFAULT 0,
+    goal_date TEXT NOT NULL,
     created_at TEXT NOT NULL,
 
     FOREIGN KEY (user_id)

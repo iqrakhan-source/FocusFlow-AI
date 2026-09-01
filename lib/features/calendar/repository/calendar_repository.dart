@@ -6,118 +6,122 @@ class CalendarRepository {
   final AppDatabase _database = AppDatabase.instance;
 
   Future<List<CalendarEventModel>> getEvents(
-      int userId,
-      ) async {
+    int userId,
+  ) async {
     final db = await _database.database;
 
     final events = <CalendarEventModel>[];
 
     // STUDY SESSIONS
-    final sessions = await db.query(
-      DatabaseConstants.studySessionsTable,
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'started_at ASC',
-    );
-
-    for (final session in sessions) {
-      events.add(
-        CalendarEventModel(
-          id: session['id'] as int?,
-          userId: userId,
-          title: session['subject'] as String,
-          eventType: 'study',
-          date: DateTime.parse(
-            session['started_at'] as String,
-          ),
-          subject: session['subject'] as String,
-          sessionType: session['session_type'] as String,
-          isCompleted:
-          (session['is_completed'] as int) == 1,
-        ),
+    try {
+      final sessions = await db.query(
+        DatabaseConstants.studySessionsTable,
+        where: 'user_id = ?',
+        whereArgs: [userId],
+        orderBy: 'started_at ASC',
       );
-    }
+
+      for (final session in sessions) {
+        final dateStr = session['started_at'] as String?;
+        if (dateStr != null) {
+          events.add(
+            CalendarEventModel(
+              id: session['id'] as int?,
+              userId: userId,
+              title: session['subject'] as String? ?? 'Study Session',
+              eventType: 'study',
+              date: DateTime.parse(dateStr).toLocal(),
+              subject: session['subject'] as String?,
+              sessionType: session['session_type'] as String?,
+              isCompleted: session['is_completed'] == 1,
+            ),
+          );
+        }
+      }
+    } catch (_) {}
 
     // ASSIGNMENTS
-    final assignments = await db.query(
-      DatabaseConstants.assignmentsTable,
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'due_date ASC',
-    );
-
-    for (final assignment in assignments) {
-      events.add(
-        CalendarEventModel(
-          id: assignment['id'] as int?,
-          userId: userId,
-          title: assignment['title'] as String,
-          eventType: 'assignment',
-          date: DateTime.parse(
-            assignment['due_date'] as String,
-          ),
-          subject: assignment['subject'] as String,
-        ),
+    try {
+      final assignments = await db.query(
+        DatabaseConstants.assignmentsTable,
+        where: 'user_id = ?',
+        whereArgs: [userId],
+        orderBy: 'due_date ASC',
       );
-    }
+
+      for (final assignment in assignments) {
+        final dateStr = assignment['due_date'] as String?;
+        if (dateStr != null) {
+          events.add(
+            CalendarEventModel(
+              id: assignment['id'] as int?,
+              userId: userId,
+              title: assignment['title'] as String? ?? 'Assignment',
+              eventType: 'assignment',
+              date: DateTime.parse(dateStr).toLocal(),
+              subject: assignment['subject'] as String?,
+            ),
+          );
+        }
+      }
+    } catch (_) {}
 
     // EXAMS
-    final exams = await db.query(
-      DatabaseConstants.examsTable,
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'exam_date ASC',
-    );
-
-    for (final exam in exams) {
-      events.add(
-        CalendarEventModel(
-          id: exam['id'] as int?,
-          userId: userId,
-          title: exam['title'] as String,
-          eventType: 'exam',
-          date: DateTime.parse(
-            exam['exam_date'] as String,
-          ),
-          subject: exam['subject'] as String,
-        ),
+    try {
+      final exams = await db.query(
+        DatabaseConstants.examsTable,
+        where: 'user_id = ?',
+        whereArgs: [userId],
+        orderBy: 'exam_date ASC',
       );
-    }
+
+      for (final exam in exams) {
+        final dateStr = exam['exam_date'] as String?;
+        if (dateStr != null) {
+          events.add(
+            CalendarEventModel(
+              id: exam['id'] as int?,
+              userId: userId,
+              title: exam['title'] as String? ?? 'Exam',
+              eventType: 'exam',
+              date: DateTime.parse(dateStr).toLocal(),
+              subject: exam['subject'] as String?,
+            ),
+          );
+        }
+      }
+    } catch (_) {}
 
     // GOALS
-    final goals = await db.query(
-      DatabaseConstants.goalsTable,
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'goal_date ASC',
-    );
+    try {
+      final goals = await db.query(
+        DatabaseConstants.goalsTable,
+        where: 'user_id = ?',
+        whereArgs: [userId],
+      );
 
-    for (final goal in goals) {
-      final targetMinutes =
-      goal['target_minutes'] as int;
+      for (final goal in goals) {
+        final targetMinutes = (goal['target_minutes'] as num?)?.toInt() ?? 0;
+        final completedMinutes = (goal['completed_minutes'] as num?)?.toInt() ?? 0;
+        final goalDateStr = (goal['goal_date'] ?? goal['created_at']) as String?;
 
-      final completedMinutes =
-      goal['completed_minutes'] as int;
-
-      // Only add missed goals.
-      if (completedMinutes < targetMinutes) {
-        events.add(
-          CalendarEventModel(
-            id: goal['id'] as int?,
-            userId: userId,
-            title: goal['title'] as String,
-            eventType: 'missed_goal',
-            date: DateTime.parse(
-              goal['goal_date'] as String,
+        if (completedMinutes < targetMinutes && goalDateStr != null) {
+          events.add(
+            CalendarEventModel(
+              id: goal['id'] as int?,
+              userId: userId,
+              title: goal['title'] as String? ?? 'Goal',
+              eventType: 'missed_goal',
+              date: DateTime.parse(goalDateStr).toLocal(),
             ),
-          ),
-        );
+          );
+        }
       }
-    }
+    } catch (_) {}
 
     // Keep calendar events ordered by date.
     events.sort(
-          (a, b) => a.date.compareTo(b.date),
+      (a, b) => a.date.compareTo(b.date),
     );
 
     return events;

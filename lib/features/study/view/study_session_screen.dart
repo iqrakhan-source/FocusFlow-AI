@@ -121,7 +121,6 @@ class _StudySessionScreenState extends State<StudySessionScreen> {
     }
 
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(

@@ -20,12 +20,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     super.initState();
+    _loadEvents();
+  }
 
+  void _loadEvents() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userId = context.read<AuthViewModel>().currentUser!.id!;
-
-      context.read<CalendarViewModel>().loadEvents(userId);
+      if (!mounted) return;
+      final userId = context.read<AuthViewModel>().currentUser?.id;
+      if (userId != null) {
+        context.read<CalendarViewModel>().loadEvents(userId);
+      }
     });
+  }
+
+  String _formatMonthYear(DateTime date) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return '${months[date.month - 1]} ${date.year}';
   }
 
   @override
@@ -58,7 +71,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               const SizedBox(height: 4),
 
               Text(
-                'September 2026',
+                _formatMonthYear(DateTime.now()),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colors.onSurfaceVariant,
                 ),

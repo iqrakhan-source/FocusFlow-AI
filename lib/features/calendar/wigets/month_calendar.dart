@@ -134,18 +134,19 @@ class MonthCalendar extends StatelessWidget {
   }
 
   List<Color> _eventColorsForDate(
-      BuildContext context,
-      DateTime date,
-      ) {
+    BuildContext context,
+    DateTime date,
+  ) {
     final colors = Theme.of(context).colorScheme;
 
     final dayEvents = events.where((event) {
-      return event.date.year == date.year &&
-          event.date.month == date.month &&
-          event.date.day == date.day;
+      final eDate = event.date.toLocal();
+      return eDate.year == date.year &&
+          eDate.month == date.month &&
+          eDate.day == date.day;
     }).toList();
 
-    return dayEvents.map((event) {
+    return dayEvents.take(4).map((event) {
       switch (event.eventType) {
         case 'study':
           return colors.primary;
@@ -154,10 +155,10 @@ class MonthCalendar extends StatelessWidget {
           return colors.secondary;
 
         case 'exam':
-          return colors.error;
+          return const Color(0xFFF2994A);
 
         case 'missed_goal':
-          return const Color(0xFFF2994A);
+          return colors.error;
 
         default:
           return colors.primary;
@@ -187,7 +188,7 @@ class _CalendarDay extends StatelessWidget {
       children: [
         Container(
           width: 44,
-          height: 36,
+          height: 34,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isSelected
@@ -214,10 +215,10 @@ class _CalendarDay extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: eventColors.map((color) {
             return Container(
-              width: 4,
-              height: 4,
+              width: 5,
+              height: 5,
               margin: const EdgeInsets.symmetric(
-                horizontal: 1,
+                horizontal: 1.5,
               ),
               decoration: BoxDecoration(
                 color: color,
